@@ -16,6 +16,7 @@ routes.post('/user/create', UserController.store);
 
 routes.get('/team/:id', TeamController.show);
 routes.get('/team/create', TeamController.store);
+routes.post('/team/:id/:token', TeamController.update);
 
 routes.get('/map', MapaController.index);
 routes.post('/map/create', MapaController.store);

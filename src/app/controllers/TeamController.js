@@ -24,9 +24,21 @@ class UserController {
   }
   // update match
   async update(req, res) {
-    const { id } = req.params;
+    const { id, token } = req.params;
+    const { player } = req.body;
     const team = await Team.findById(id);
-    return res.json(team);
+
+    team.token !== token &&
+      res
+        .status(403)
+        .json({ error: 'Você não tem permissão parar selecionar o jogador.' });
+
+    const newTeam = await Team.findOneAndUpdate(id, {
+      players: [...players, player],
+    });
+
+    console.log(newTeam);
+    return res.json(newTeam);
   }
 }
 
