@@ -1,4 +1,6 @@
 import Match from '../models/Match';
+import Team from '../models/Team';
+import Mapa from '../models/Mapa';
 
 class MatchController {
   // list match
@@ -19,40 +21,41 @@ class MatchController {
   }
   // creact match
   async store(req, res) {
-    const { membros, maps } = req.body;
+    try {
+      const { players } = req.body;
+      players.sort((a, b) => b.score - a.score);
 
-    // check players length
-    membros.length !== 10 &&
-      res.status(403).json({ error: 'Number players invalid.' });
-    // Check receive maps array
-    !maps && res.status(403).json({ error: 'Maps not provited.' });
+      const leaderA = players[0];
+      const leaderB = players[1];
+      const teamA = await Team.create({ players: [leaderA], name: `Time A` });
+      const teamB = await Team.create({ players: [leaderB], name: `Time B` });
 
-    const newMatch = {
-      players: membros,
-      teams: [
-        {
-          name: 'teamA',
-          lineUp: [membros[0]],
-        },
-        {
-          name: 'teamB',
-          lineUp: [membros[1]],
-        },
-      ],
-      maps,
-    };
+      const teams = {
+        unset: players.slice(2),
+        teamA,
+        teamB,
+      };
 
-    const match = await Match.create(newMatch);
-    console.log(newMatch);
-    return res.json(match);
+      const maps = await Mapa.find();
+
+      const newMatch = {
+        matchType: 'unranked',
+        status: 'lobby',
+        maps,
+        teams,
+      };
+      const match = await Match.create(newMatch);
+
+      return res.json(match);
+    } catch (error) {
+      console.log(error);
+    }
   }
   // update match
   async update(req, res) {
     const { token, playerId } = req.body;
-    console.log(token, playerId);
 
     const player = await Match.findById(playerId);
-    console.log(player);
     // const team = await Match.findById(token);
 
     // validar se a partida existe
